@@ -57,16 +57,10 @@ class HemoryServerSelfhost < Formula
         #{etc}/hemory-server-selfhost/.env.example
 
       首次使用:
-        1. 设置管理密码:
-           export HEMORY_ADMIN_PASSWORD=your-password
-
-        2. (可选) 设置 LLM API Key:
-           export LLM_API_KEY=sk-xxx
-
-        3. 启动服务:
+        1. 启动服务:
            hemory-server-selfhost start
 
-        4. 或设为开机自启:
+        2. 或设为开机自启:
            brew services start hemory-server-selfhost
 
       数据目录: ~/.hemory/vault/
