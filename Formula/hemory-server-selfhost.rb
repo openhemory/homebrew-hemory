@@ -1,9 +1,9 @@
 class HemoryServerSelfhost < Formula
   desc "Hemory Self-Host Server — vault + worker + pi-bridge 一键部署"
   homepage "https://hemory.net"
-  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.10/hemory-server-0.9.10.tar.gz"
-  sha256 "f1a25b885ebe34b3de2a67c80ad429951b213ac0826ec2341a03902c6d353293"
-  version "0.9.10"
+  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.12/hemory-server-0.9.12.tar.gz"
+  sha256 "509c041f66ed3c9a16e65d57c7ddd0eaabc3f580212f4090cbebf7ed6dc6f6bb"
+  version "0.9.12"
   license "MIT"
 
   depends_on "python@3.11"
@@ -53,6 +53,11 @@ class HemoryServerSelfhost < Formula
 
   def caveats
     <<~EOS
+      系统依赖:
+        ✓ Python 3.11+  (已安装)
+        ✓ Node.js 20+   (已安装)
+        ✓ FFmpeg        (已安装)
+
       配置文件:
         #{etc}/hemory-server-selfhost/.env.example
 
@@ -66,6 +71,13 @@ class HemoryServerSelfhost < Formula
       数据目录: ~/.hemory/vault/
       配置目录: ~/.hemory/vault/.hemoryserver/
       日志目录: ~/.hemory/vault/.hemoryserver/logs/
+
+      故障排查:
+        如果 Worker 报错 "FFmpeg not found"，请确保 FFmpeg 在 PATH 中：
+          which ffmpeg
+        
+        如果未找到，请重新安装：
+          brew reinstall ffmpeg
     EOS
   end
 
