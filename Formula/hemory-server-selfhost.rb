@@ -1,9 +1,9 @@
 class HemoryServerSelfhost < Formula
   desc "Hemory Self-Host Server — vault + worker + pi-bridge 一键部署"
   homepage "https://hemory.net"
-  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.8.0/hemory-server-0.8.0.tar.gz"
-  sha256 "147c6842e246aa5f321ea1f29caebf559de86f2a31c4407265b56682ff1af49d"
-  version "0.8.0"
+  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.1/hemory-server-0.9.1.tar.gz"
+  sha256 "9a1856188e84f864614418ebc04fd2007d8979d5c2d08d7cba2e83e577d5e9e0"
+  version "0.9.1"
   license "MIT"
 
   depends_on "python@3.11"
