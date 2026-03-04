@@ -1,9 +1,9 @@
 class HemoryServerSelfhost < Formula
   desc "Hemory Self-Host Server — vault + worker + pi-bridge 一键部署"
   homepage "https://hemory.net"
-  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.13/hemory-server-0.9.13.tar.gz"
-  sha256 "5f7e5bac70b394a158082bdb32d78daf65d67f8881686d5c7b8e82f5cf25cf28"
-  version "0.9.13"
+  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.14/hemory-server-0.9.14.tar.gz"
+  sha256 "9281ea2b4bf07a68e969e9c65d562f0abdadd3553216d9fb612fd89babab768f"
+  version "0.9.14"
   license "MIT"
 
   depends_on "python@3.11"
@@ -22,9 +22,9 @@ class HemoryServerSelfhost < Formula
     system pip, "install", "--upgrade", "pip", "setuptools", "wheel"
 
     # 安装 vault + worker 到共享 venv
-    # 强制从源码编译 cryptography 以避免 dylib headerpad 问题
-    system pip, "install", "--no-cache-dir", "--no-binary", "cryptography", "./vault"
-    system pip, "install", "--no-cache-dir", "--no-binary", "cryptography", "./worker"
+    # 强制从源码编译 cryptography 以避免 dylib headerpad 问题，其他依赖使用二进制包
+    system pip, "install", "--only-binary", ":all:", "--no-binary", "cryptography", "./vault"
+    system pip, "install", "--only-binary", ":all:", "--no-binary", "cryptography", "./worker"
 
     # 安装 pi-bridge
     pi_bridge = libexec / "pi-bridge"
