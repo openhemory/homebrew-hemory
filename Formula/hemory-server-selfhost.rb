@@ -1,9 +1,9 @@
 class HemoryServerSelfhost < Formula
   desc "Hemory Self-Host Server — vault + worker + pi-bridge 一键部署"
   homepage "https://hemory.net"
-  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.18/hemory-server-0.9.18.tar.gz"
-  sha256 "2456c2ee7da0cf77b1f31cc1100ed65d56f1e96d4f8f9c8ede792ecbdaecf0bc"
-  version "0.9.18"
+  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.19/hemory-server-0.9.19.tar.gz"
+  sha256 "97a28db822a5cad80bd3fc889081eee5fca7db52e17c1cc69088c3691b3a894a"
+  version "0.9.19"
   license "MIT"
 
   depends_on "python@3.11"
@@ -50,9 +50,9 @@ class HemoryServerSelfhost < Formula
     # 安装启动脚本
     bin.install buildpath / "selfhost" / "hemory-server-selfhost"
 
-    # 安装 .env.example
+    # 安装 worker.conf.example
     (etc / "hemory-server-selfhost").mkpath
-    cp buildpath / "selfhost" / ".env.example", etc / "hemory-server-selfhost" / ".env.example"
+    cp buildpath / "worker" / "worker.conf.example", etc / "hemory-server-selfhost" / "worker.conf.example"
   end
 
   def caveats
@@ -63,7 +63,7 @@ class HemoryServerSelfhost < Formula
         ✓ FFmpeg        (已安装)
 
       配置文件:
-        #{etc}/hemory-server-selfhost/.env.example
+        ~/.hemory/vault/.hemoryserver/worker.conf
 
       首次使用:
         1. 启动服务:
