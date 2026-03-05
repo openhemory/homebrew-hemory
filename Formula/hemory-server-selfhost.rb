@@ -1,9 +1,9 @@
 class HemoryServerSelfhost < Formula
   desc "Hemory Self-Host Server — vault + worker + pi-bridge 一键部署"
   homepage "https://hemory.net"
-  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.15/hemory-server-0.9.15.tar.gz"
-  sha256 "e84da1133fb68b27cbca990e3cb6b58d22cec536743dc79e3697603fa327d164"
-  version "0.9.15"
+  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.16/hemory-server-0.9.16.tar.gz"
+  sha256 "9735794064741d9b8eeb71b484a11ab664be489c80bd977e98e570c51fca9a9c"
+  version "0.9.16"
   license "MIT"
 
   depends_on "python@3.11"
@@ -34,10 +34,14 @@ class HemoryServerSelfhost < Formula
     cp buildpath / "pi-bridge" / "server.mjs", pi_bridge
     system "npm", "ci", "--production", "--prefix", pi_bridge
 
-    # 复制默认配置模板
+    # 复制默认配置模板（含 prompts）
     defaults = libexec / "defaults"
     defaults.mkpath
     cp buildpath / "pi-bridge" / "defaults" / "providers.example.json", defaults
+    cp_r buildpath / "pi-bridge" / "defaults" / "prompts", defaults / "prompts" if (buildpath / "pi-bridge" / "defaults" / "prompts").exist?
+
+    # 同时复制 defaults 到 pi-bridge 目录下，供 server.mjs initializePrompts() 使用
+    cp_r buildpath / "pi-bridge" / "defaults", pi_bridge / "defaults"
 
     # 复制静态文件
     (libexec / "static").mkpath
