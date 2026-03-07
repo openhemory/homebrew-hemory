@@ -1,9 +1,9 @@
 class HemoryServerSelfhost < Formula
   desc "Hemory Self-Host Server — vault + worker + pi-bridge 一键部署"
   homepage "https://hemory.net"
-  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.31/hemory-server-0.9.31.tar.gz"
-  sha256 "af9d71b7a2b13e4efe479b79da10ad25e0caeba1d457264922064db96e0acdd9"
-  version "0.9.31"
+  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.32/hemory-server-0.9.32.tar.gz"
+  sha256 "92ef18872fa910ce7341112780ca06371df73fbf99a5e4daeabc5a1bb8c2fb7d"
+  version "0.9.32"
   license "MIT"
 
   depends_on "python@3.11"
@@ -47,8 +47,24 @@ class HemoryServerSelfhost < Formula
     (libexec / "static").mkpath
     cp_r buildpath / "vault" / "static" / "docs", libexec / "static" / "docs" if (buildpath / "vault" / "static" / "docs").exist?
 
-    # 安装启动脚本
-    bin.install buildpath / "selfhost" / "hemory-server-selfhost"
+    # 安装服务管理脚本到 libexec（内部实现，不直接暴露给用户）
+    cp buildpath / "selfhost" / "hemory-server-selfhost", libexec / "hemory-server-selfhost"
+    chmod 0755, libexec / "hemory-server-selfhost"
+
+    # 安装 hemory CLI（ops 目录）— 统一入口
+    ops = libexec / "ops"
+    ops.mkpath
+    cp buildpath / "vault" / "ops" / "hemory", ops / "hemory"
+    cp_r buildpath / "vault" / "ops" / "commands", ops / "commands"
+    cp_r buildpath / "vault" / "ops" / "lib", ops / "lib"
+    chmod 0755, ops / "hemory"
+
+    # hemory 作为唯一的 bin 命令
+    (bin / "hemory").write <<~SH
+      #!/bin/bash
+      exec "#{libexec}/ops/hemory" "$@"
+    SH
+    chmod 0755, bin / "hemory"
 
     # 安装 worker.conf.example
     (etc / "hemory-server-selfhost").mkpath
@@ -67,10 +83,23 @@ class HemoryServerSelfhost < Formula
 
       首次使用:
         1. 启动服务:
-           hemory-server-selfhost start
+           hemory start
 
         2. 或设为开机自启:
            brew services start hemory-server-selfhost
+
+        3. 初始化与管理:
+           hemory init --password "your-password"
+           hemory config show --password "your-password"
+           hemory health
+
+        4. 停止服务:
+           hemory stop
+
+        5. 查看状态:
+           hemory status
+
+      所有操作通过统一的 hemory 命令完成，输入 hemory --help 查看全部子命令。
 
       数据目录: ~/.hemory/vault/
       配置目录: ~/.hemory/vault/.hemoryserver/
@@ -86,7 +115,7 @@ class HemoryServerSelfhost < Formula
   end
 
   service do
-    run [opt_bin / "hemory-server-selfhost", "start", "--foreground"]
+    run [opt_bin / "hemory", "start", "--foreground"]
     keep_alive true
     log_path var / "log" / "hemory-server-selfhost.log"
     error_log_path var / "log" / "hemory-server-selfhost.log"
@@ -94,6 +123,6 @@ class HemoryServerSelfhost < Formula
   end
 
   test do
-    assert_match "hemory-server-selfhost", shell_output("#{bin}/hemory-server-selfhost 2>&1", 1)
+    assert_match "Hemory Selfhost CLI", shell_output("#{bin}/hemory --help")
   end
 end
