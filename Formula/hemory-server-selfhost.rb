@@ -1,9 +1,9 @@
 class HemoryServerSelfhost < Formula
   desc "Hemory Self-Host Server — vault + worker + pi-bridge 一键部署"
   homepage "https://hemory.net"
-  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.39/hemory-server-0.9.39.tar.gz"
-  sha256 "bd30a30366c80eaeed46a9944e7e7f62088a3851ed8062af4ff9b62265aac6b8"
-  version "0.9.39"
+  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.40/hemory-server-0.9.40.tar.gz"
+  sha256 "9fae469933af189adb075a51f899c6265acdd6513af1603e41e4cbd797a88fc7"
+  version "0.9.40"
   license "MIT"
 
   depends_on "python@3.11"
@@ -50,6 +50,15 @@ class HemoryServerSelfhost < Formula
     # 复制静态文件
     (libexec / "static").mkpath
     cp_r buildpath / "vault" / "static" / "docs", libexec / "static" / "docs" if (buildpath / "vault" / "static" / "docs").exist?
+
+    # 内嵌 ASR 模型（paraformer），安装后无需联网下载
+    model_src = buildpath / "models" / "sherpa-onnx-paraformer-zh-small-2024-03-09"
+    if model_src.exist?
+      model_dst = libexec / "models" / "sherpa-onnx-paraformer-zh-small-2024-03-09"
+      model_dst.mkpath
+      cp model_src / "model.int8.onnx", model_dst
+      cp model_src / "tokens.txt", model_dst
+    end
 
     # 安装服务管理脚本到 libexec（内部实现，不直接暴露给用户）
     cp buildpath / "selfhost" / "hemory-server-selfhost", libexec / "hemory-server-selfhost"
