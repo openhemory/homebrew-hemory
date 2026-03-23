@@ -1,9 +1,9 @@
 class HemoryServerSelfhost < Formula
   desc "Hemory Self-Host Server — vault + worker + pi-bridge 一键部署"
   homepage "https://hemory.net"
-  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.40/hemory-server-0.9.40.tar.gz"
-  sha256 "9fae469933af189adb075a51f899c6265acdd6513af1603e41e4cbd797a88fc7"
-  version "0.9.40"
+  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.41/hemory-server-0.9.41.tar.gz"
+  sha256 "5a2b46bc2b9b3260bb7c5ccb02115f165147a77ccce6591b501d7aaab75b33d2"
+  version "0.9.41"
   license "MIT"
 
   depends_on "python@3.11"
@@ -36,6 +36,7 @@ class HemoryServerSelfhost < Formula
     cp buildpath / "pi-bridge" / "package.json", pi_bridge
     cp buildpath / "pi-bridge" / "package-lock.json", pi_bridge
     cp buildpath / "pi-bridge" / "server.mjs", pi_bridge
+    cp_r buildpath / "pi-bridge" / "scripts", pi_bridge / "scripts"
     system "npm", "ci", "--production", "--prefix", pi_bridge
 
     # 复制默认配置模板（含 prompts）
@@ -47,9 +48,12 @@ class HemoryServerSelfhost < Formula
     # 同时复制 defaults 到 pi-bridge 目录下，供 server.mjs initializePrompts() 使用
     cp_r buildpath / "pi-bridge" / "defaults", pi_bridge / "defaults"
 
-    # 复制静态文件
-    (libexec / "static").mkpath
-    cp_r buildpath / "vault" / "static" / "docs", libexec / "static" / "docs" if (buildpath / "vault" / "static" / "docs").exist?
+    # 复制 agent_prompt_template（vault 代码通过相对路径引用）
+    apt_dst = venv / "lib" / "python3.11" / "agent_prompt_template"
+    cp_r buildpath / "vault" / "agent_prompt_template", apt_dst if (buildpath / "vault" / "agent_prompt_template").exist?
+
+    # 复制静态文件（含 docs/、qrcode.min.js、favicon 等）
+    cp_r buildpath / "vault" / "static", libexec / "static" if (buildpath / "vault" / "static").exist?
 
     # 内嵌 ASR 模型（paraformer），安装后无需联网下载
     model_src = buildpath / "models" / "sherpa-onnx-paraformer-zh-small-2024-03-09"
