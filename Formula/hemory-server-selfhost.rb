@@ -1,9 +1,9 @@
 class HemoryServerSelfhost < Formula
   desc "Hemory Self-Host Server — vault + worker + pi-bridge 一键部署"
   homepage "https://hemory.net"
-  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.38/hemory-server-0.9.38.tar.gz"
-  sha256 "b9aa61fe4e99e5e0790ed99839c31505c233668a0cb526bb44e93a613aef01d3"
-  version "0.9.38"
+  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.39/hemory-server-0.9.39.tar.gz"
+  sha256 "bd30a30366c80eaeed46a9944e7e7f62088a3851ed8062af4ff9b62265aac6b8"
+  version "0.9.39"
   license "MIT"
 
   depends_on "python@3.11"
@@ -21,10 +21,14 @@ class HemoryServerSelfhost < Formula
     # 升级 pip 和安装构建工具
     system pip, "install", "--upgrade", "pip", "setuptools", "wheel"
 
-    # 安装 vault + worker 到共享 venv
+    # 安装 hemory-shared + vault + worker 到共享 venv
     # 强制从源码编译 cryptography 以避免 dylib headerpad 问题，其他依赖使用二进制包
+    system pip, "install", "--only-binary", ":all:", "--no-binary", "cryptography", "./shared/python"
     system pip, "install", "--only-binary", ":all:", "--no-binary", "cryptography", "./vault"
     system pip, "install", "--only-binary", ":all:", "--no-binary", "cryptography", "./worker"
+
+    # wespeaker 不在 PyPI，需要 --no-deps 单独安装（避免拉入不兼容的依赖）
+    system pip, "install", "--no-deps", "git+https://github.com/wenet-e2e/wespeaker.git"
 
     # 安装 pi-bridge
     pi_bridge = libexec / "pi-bridge"
