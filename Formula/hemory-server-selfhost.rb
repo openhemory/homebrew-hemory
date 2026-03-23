@@ -1,9 +1,9 @@
 class HemoryServerSelfhost < Formula
   desc "Hemory Self-Host Server — vault + worker + pi-bridge 一键部署"
   homepage "https://hemory.net"
-  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.41/hemory-server-0.9.41.tar.gz"
-  sha256 "5a2b46bc2b9b3260bb7c5ccb02115f165147a77ccce6591b501d7aaab75b33d2"
-  version "0.9.41"
+  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.42/hemory-server-0.9.42.tar.gz"
+  sha256 "d1324947fa403e68189f0c1ef46ca053718715e7a4c90d7a93431da96715946f"
+  version "0.9.42"
   license "MIT"
 
   depends_on "python@3.11"
@@ -62,6 +62,13 @@ class HemoryServerSelfhost < Formula
       model_dst.mkpath
       cp model_src / "model.int8.onnx", model_dst
       cp model_src / "tokens.txt", model_dst
+    end
+
+    # 内嵌 VAD 模型（silero_vad.onnx），安装后无需联网下载
+    vad_src = buildpath / "models" / "silero_vad.onnx"
+    if vad_src.exist?
+      (libexec / "models").mkpath
+      cp vad_src, libexec / "models" / "silero_vad.onnx"
     end
 
     # 安装服务管理脚本到 libexec（内部实现，不直接暴露给用户）
