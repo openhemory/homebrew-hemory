@@ -16,6 +16,20 @@ class HemoryServerSelfhost < Formula
   skip_clean "libexec"
 
   def install
+    # 升级前停止正在运行的旧服务，避免端口占用和文件锁冲突
+    hemory_bin = HOMEBREW_PREFIX / "bin" / "hemory"
+    if hemory_bin.exist?
+      system hemory_bin, "stop" rescue nil
+      sleep 1
+    end
+    # 兜底：如果 PID 文件方式未能停止，按端口强杀残留进程
+    [8032, 8034, 8035, 8434].each do |port|
+      pids = `lsof -ti :#{port} 2>/dev/null`.strip
+      next if pids.empty?
+      pids.split("\n").each { |pid| Process.kill("TERM", pid.to_i) rescue nil }
+    end
+    sleep 1
+
     venv = libexec / "venv"
 
     # 创建共享 Python venv
