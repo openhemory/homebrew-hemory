@@ -1,15 +1,19 @@
 class HemoryServerSelfhost < Formula
   desc "Hemory Self-Host Server — vault + worker + pi-bridge 一键部署"
   homepage "https://hemory.net"
-  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.43/hemory-server-0.9.43.tar.gz"
-  sha256 "1b20dd84971dcd44b17f87c6a0f393f245bc6ec6d76d04d9a641a4b36bf61771"
-  version "0.9.43"
+  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.44/hemory-server-0.9.44.tar.gz"
+  sha256 "2e8746d8f4152573d14195028698f3bfb4e626ed248257e704211a2be8c1d908"
+  version "0.9.44"
   license "MIT"
 
   depends_on "python@3.11"
   depends_on "node@20"
   depends_on "ffmpeg"
   depends_on "rust" => :build  # 从源码编译 cryptography 需要
+
+  # venv 内的预编译 .so (pydantic_core 等) Mach-O header 空间不足，
+  # Homebrew relocate 会失败；venv 内的 .so 不需要被外部链接，跳过即可
+  skip_clean "libexec"
 
   def install
     venv = libexec / "venv"
@@ -69,6 +73,15 @@ class HemoryServerSelfhost < Formula
     if vad_src.exist?
       (libexec / "models").mkpath
       cp vad_src, libexec / "models" / "silero_vad.onnx"
+    end
+
+    # 内嵌 WeSpeaker 中文声纹模型（cnceleb_resnet34），安装后无需联网下载
+    wespeaker_src = buildpath / "models" / "wespeaker-chinese"
+    if wespeaker_src.exist?
+      wespeaker_dst = libexec / "models" / "wespeaker-chinese"
+      wespeaker_dst.mkpath
+      cp wespeaker_src / "avg_model.pt", wespeaker_dst
+      cp wespeaker_src / "config.yaml", wespeaker_dst
     end
 
     # 安装服务管理脚本到 libexec（内部实现，不直接暴露给用户）
