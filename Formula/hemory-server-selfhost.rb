@@ -1,9 +1,9 @@
 class HemoryServerSelfhost < Formula
   desc "Hemory Self-Host Server — vault + worker + pi-bridge 一键部署"
   homepage "https://hemory.net"
-  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.45/hemory-server-0.9.45.tar.gz"
-  sha256 "26a47718ea49115820eea53a97c29aa426f1669b282b7f2fc0486b1459d660ea"
-  version "0.9.45"
+  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.46/hemory-server-0.9.46.tar.gz"
+  sha256 "c278e9376a410363507c5353c3abb18badcef5ca10a896e879da3551f50d0887"
+  version "0.9.46"
   license "MIT"
 
   depends_on "python@3.11"
@@ -45,8 +45,13 @@ class HemoryServerSelfhost < Formula
     system pip, "install", "--only-binary", ":all:", "--no-binary", "cryptography", "./vault"
     system pip, "install", "--only-binary", ":all:", "--no-binary", "cryptography", "./worker"
 
-    # wespeaker 不在 PyPI，需要 --no-deps 单独安装（避免拉入不兼容的依赖）
-    system pip, "install", "--no-deps", "git+https://github.com/wenet-e2e/wespeaker.git"
+    # wespeaker（从本地 wheel 安装，--no-deps 避免拉入 hdbscan/umap 等不兼容依赖）
+    wespeaker_whl = Dir[buildpath / "vendor" / "wespeaker-*.whl"].first
+    if wespeaker_whl
+      system pip, "install", "--no-deps", wespeaker_whl
+    else
+      system pip, "install", "--no-deps", "git+https://github.com/wenet-e2e/wespeaker.git"
+    end
 
     # 安装 pi-bridge
     pi_bridge = libexec / "pi-bridge"
