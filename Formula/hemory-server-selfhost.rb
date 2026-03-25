@@ -1,9 +1,9 @@
 class HemoryServerSelfhost < Formula
   desc "Hemory Self-Host Server — vault + worker + pi-bridge 一键部署"
   homepage "https://hemory.net"
-  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.50/hemory-server-0.9.50.tar.gz"
-  sha256 "d57ca602ac64f86939f5fdd2dc2e545a80eaa3cfaf1b03d40c31e0877901a6fc"
-  version "0.9.50"
+  url "https://github.com/openhemory/hemory-server-selfhost/releases/download/v0.9.51/hemory-server-0.9.51.tar.gz"
+  sha256 "470f417fc1886545a9d8ea32106bd7b281443c459f5a703f80f04118a6eb3313"
+  version "0.9.51"
   license "MIT"
 
   depends_on "python@3.11"
@@ -22,11 +22,17 @@ class HemoryServerSelfhost < Formula
       system hemory_bin, "stop" rescue nil
       sleep 1
     end
-    # 兜底：如果 PID 文件方式未能停止，按端口强杀残留进程
+    # 兜底：如果 PID 文件方式未能停止，按端口查找并仅杀 Hemory 相关进程
     [8032, 8034, 8035, 8434].each do |port|
       pids = `lsof -ti :#{port} 2>/dev/null`.strip
       next if pids.empty?
-      pids.split("\n").each { |pid| Process.kill("TERM", pid.to_i) rescue nil }
+      pids.split("\n").each do |pid|
+        pid = pid.strip.to_i
+        next if pid <= 0
+        cmd = `ps -p #{pid} -o command= 2>/dev/null`.strip
+        next unless cmd.match?(/hemory|pi-bridge|server\.mjs/)
+        Process.kill("TERM", pid) rescue nil
+      end
     end
     sleep 1
 
@@ -78,6 +84,9 @@ class HemoryServerSelfhost < Formula
     # 复制静态文件（含 docs/、qrcode.min.js、favicon 等）
     cp_r buildpath / "vault" / "static", libexec / "static" if (buildpath / "vault" / "static").exist?
 
+    # 复制 vault 数据文件（genvoiceprint.json 等）
+    cp_r buildpath / "vault" / "data", libexec / "data" if (buildpath / "vault" / "data").exist?
+
     # 内嵌 ASR 模型（paraformer），安装后无需联网下载
     model_src = buildpath / "models" / "sherpa-onnx-paraformer-zh-small-2024-03-09"
     if model_src.exist?
@@ -101,6 +110,15 @@ class HemoryServerSelfhost < Formula
       wespeaker_dst.mkpath
       cp wespeaker_src / "avg_model.pt", wespeaker_dst
       cp wespeaker_src / "config.yaml", wespeaker_dst
+    end
+
+    # 内嵌 ECAPA gender 模型（voice-gender-classifier），安装后无需联网下载
+    gender_src = buildpath / "models" / "voice-gender-classifier"
+    if gender_src.exist?
+      gender_dst = libexec / "models" / "voice-gender-classifier"
+      gender_dst.mkpath
+      cp gender_src / "model.safetensors", gender_dst
+      cp gender_src / "config.json", gender_dst
     end
 
     # 安装服务管理脚本到 libexec（内部实现，不直接暴露给用户）
